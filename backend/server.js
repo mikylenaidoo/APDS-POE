@@ -21,14 +21,14 @@ async function createDefaultAdmin() {
       const adminUser = new User({
         name: 'Admin',
         surname: 'User', // Default surname
-        email: 'first@admin.com',
+        email: 'dummy@admin.com',
         password: hashedPassword,
         role: 'admin',
         accountNumber: Math.floor(1000000000 + Math.random() * 9000000000).toString(), // Generates a random 10-digit account number
         idNumber: '0000000000000', // Provide a default idNumber
       });
       await adminUser.save();
-      console.log('Default admin user created with email: first@admin.com and password: Admin123');
+      console.log('Default admin user created with email: dummy@admin.com and password: Admin123');
     } else {
       console.log('Default Admin user already exists');
     }
@@ -82,8 +82,8 @@ app.use((err, req, res, next) => {
 
 // SSL Options
 const sslOptions = {
-  key: fs.readFileSync('certificates/localhost+3-key.pem'), 
-  cert: fs.readFileSync('certificates/localhost+3.pem') 
+  key: fs.readFileSync('certificates/localhost-key.pem'), 
+  cert: fs.readFileSync('certificates/localhost.pem') 
 };
 
 // Start HTTPS Server

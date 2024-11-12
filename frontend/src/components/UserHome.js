@@ -1,19 +1,18 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { LayoutGrid, DollarSign, FileText } from 'lucide-react';
+import { DollarSign, FileText } from 'lucide-react';
 import PaymentForm from './PaymentForm';
 import Statements from './Statements';
-import { getBalanceAndTransactions, getUserProfile } from '../api'; // Import user profile API
+import { getBalanceAndTransactions, getUserProfile } from '../api';
 
 const UserHome = ({ token }) => {
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState([]);
-  const [accountNumber, setAccountNumber] = useState(''); // State for account number
-  const [selectedTab, setSelectedTab] = useState('makePayment');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [selectedTab, setSelectedTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch user data including balance and account number
-  const fetchUserBalanceAndTransactions = useCallback(async () => {
+  const fetchUserData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -21,10 +20,10 @@ const UserHome = ({ token }) => {
       setBalance(balanceResponse.data.balance);
       setTransactions(balanceResponse.data.transactions);
 
-      const profileResponse = await getUserProfile(token); // Fetch user profile
-      setAccountNumber(profileResponse.data.accountNumber); // Set the account number
+      const profileResponse = await getUserProfile(token);
+      setAccountNumber(profileResponse.data.accountNumber);
     } catch (error) {
-      console.error('Failed to fetch balance and transactions:', error);
+      console.error('Failed to fetch data:', error);
       setError('Could not load data. Please try again.');
     } finally {
       setLoading(false);
@@ -32,90 +31,170 @@ const UserHome = ({ token }) => {
   }, [token]);
 
   useEffect(() => {
-    fetchUserBalanceAndTransactions();
-  }, [fetchUserBalanceAndTransactions]);
+    fetchUserData();
+  }, [fetchUserData]);
 
   const tabs = [
-    { id: 'makePayment', label: 'Make a Payment', icon: <DollarSign size={20} color="#ADD8E6" /> },
-    { id: 'statements', label: 'View Statements', icon: <FileText size={20} color="#4169E1" /> },
+    {
+      id: 'overview',
+      label: 'Account Overview',
+      icon: <FileText size={20} />,
+    },
+    {
+      id: 'makePayment',
+      label: 'Make a Payment',
+      icon: <DollarSign size={20} />,
+    },
+    {
+      id: 'statements',
+      label: 'View Statements',
+      icon: <FileText size={20} />,
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 flex flex-col items-center p-6 animate-fade-in">
-      <div className="max-w-6xl w-full">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header Section */}
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-8 text-center">
-            <h2 className="text-4xl font-bold text-white mb-6 animate-slide-down">
-              Welcome to Your Dashboard
-            </h2>
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-green-700">International Bank</h1>
+            <p className="text-sm text-gray-500">Welcome back!</p>
           </div>
-
-          {/* Balance and Account Display */}
-          <div className="p-6 bg-blue-50 rounded-xl shadow-lg max-w-md mx-auto -mt-8 mb-6 text-center animate-bounce-slow">
-            <p className="text-gray-600 text-lg">Account Number</p>
-            <p className="text-xl font-semibold text-blue-700 mb-4">{accountNumber}</p>
-            <p className="text-gray-600 text-lg">Current Balance</p>
-            <p className="text-3xl font-bold text-blue-600">R{balance.toFixed(2)}</p>
-          </div>
-
-          {/* Navigation Tabs */}
-          <div className="flex gap-4 justify-center p-4 bg-gray-100 border-b border-gray-200">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setSelectedTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-300 transform ${
-                  selectedTab === tab.id
-                    ? 'bg-blue-500 text-white shadow-md scale-105'
-                    : 'bg-white text-gray-600 hover:bg-blue-50 border border-gray-200'
-                }`}
-                aria-label={tab.label}
-              >
-                {tab.icon}
-                <span className="text-sm">{tab.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Content Section */}
-          <div className="p-6 animate-fade-in">
-            {loading ? (
-              <p className="text-center text-gray-500">Loading data...</p>
-            ) : error ? (
-              <p className="text-center text-red-500">{error}</p>
-            ) : (
-              <div>
-                {selectedTab === 'makePayment' && (
-                  <PaymentForm token={token} onTransactionUpdate={fetchUserBalanceAndTransactions} balance={balance} />
-                )}
-                {selectedTab === 'statements' && (
-                  <Statements transactions={transactions} />
-                )}
-              </div>
-            )}
+          <div className="flex items-center space-x-4">
+            <div className="text-right">
+              <p className="text-sm text-gray-500">Account Number</p>
+              <p className="text-lg font-medium text-gray-800">{accountNumber}</p>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Custom Animations */}
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slide-down {
-          from { transform: translateY(-20px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes bounce-slow {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-5px); }
-        }
-        .animate-fade-in { animation: fade-in 1s ease-in-out forwards; }
-        .animate-slide-down { animation: slide-down 0.6s ease forwards; }
-        .animate-bounce-slow { animation: bounce-slow 2s infinite; }
-      `}</style>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Tabs */}
+        <nav className="mb-8">
+          <ul className="flex space-x-4 border-b border-gray-200">
+            {tabs.map((tab) => (
+              <li key={tab.id}>
+                <button
+                  onClick={() => setSelectedTab(tab.id)}
+                  className={`flex items-center px-4 py-2 border-b-2 ${
+                    selectedTab === tab.id
+                      ? 'border-green-600 text-green-600'
+                      : 'border-transparent text-gray-600 hover:text-green-600 hover:border-green-600'
+                  }`}
+                >
+                  {tab.icon}
+                  <span className="ml-2">{tab.label}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Content */}
+        {loading ? (
+          <div className="text-center text-gray-500">Loading data...</div>
+        ) : error ? (
+          <div className="text-center text-red-500">{error}</div>
+        ) : (
+          <div>
+            {selectedTab === 'overview' && (
+              <div>
+                {/* Account Overview */}
+                <section className="mb-8">
+                  <h2 className="text-xl font-semibold text-gray-800 mb-4">Account Summary</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-white shadow-sm rounded-lg p-6">
+                      <p className="text-sm text-gray-500">Current Balance</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        R{balance.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="bg-white shadow-sm rounded-lg p-6">
+                      <p className="text-sm text-gray-500">Available Balance</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        R{balance.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="bg-white shadow-sm rounded-lg p-6">
+                      <p className="text-sm text-gray-500">Account Number</p>
+                      <p className="text-lg font-medium text-gray-800">{accountNumber}</p>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Recent Transactions */}
+                <section>
+                  <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                    Recent Transactions
+                  </h2>
+                  {transactions.length > 0 ? (
+                    <table className="min-w-full bg-white shadow-sm rounded-lg">
+                      <thead>
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Date
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Description
+                          </th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Amount
+                          </th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {transactions.slice(0, 5).map((transaction) => (
+                          <tr key={transaction._id} className="border-t">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {new Date(transaction.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                              {transaction.displayText}
+                            </td>
+                            <td
+                              className={`px-6 py-4 whitespace-nowrap text-sm text-right ${
+                                transaction.transactionType === 'incoming'
+                                  ? 'text-green-600'
+                                  : 'text-red-600'
+                              }`}
+                            >
+                              {transaction.transactionType === 'incoming' ? '+' : '-'}R
+                              {transaction.amount.toFixed(2)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                              {transaction.status}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <p className="text-gray-500">No recent transactions.</p>
+                  )}
+                </section>
+              </div>
+            )}
+
+            {selectedTab === 'makePayment' && (
+              <PaymentForm
+                token={token}
+                onTransactionUpdate={fetchUserData}
+                balance={balance}
+              />
+            )}
+
+            {selectedTab === 'statements' && (
+              <Statements transactions={transactions} />
+            )}
+          </div>
+        )}
+      </main>
     </div>
   );
 };

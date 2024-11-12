@@ -36,7 +36,7 @@ const FinancialInsights = ({ transactions = [] }) => {
         {
           label: 'In vs Out',
           data: [moneyIn, moneyOut],
-          backgroundColor: ['#4F91FF', '#FF6B6B'], // Blue for in, soft red for out
+          backgroundColor: ['#34D399', '#F87171'], // Green for in, red for out
         },
       ],
     });
@@ -47,9 +47,9 @@ const FinancialInsights = ({ transactions = [] }) => {
     plugins: {
       legend: {
         display: true,
-        position: 'top',
+        position: 'bottom',
         labels: {
-          color: '#333', // Adjusted to neutral for readability
+          color: '#333',
         },
       },
       tooltip: {
@@ -64,12 +64,16 @@ const FinancialInsights = ({ transactions = [] }) => {
   };
 
   return (
-    <div className="bg-blue-50 p-6 rounded-lg shadow-lg mt-6">
-      <h2 className="text-2xl font-semibold text-center mb-6 text-blue-600">Financial Insights</h2>
+    <div className="bg-white p-6 rounded-xl shadow-lg mt-8">
+      <h2 className="text-2xl font-bold text-green-700 mb-6 text-center">
+        Financial Insights
+      </h2>
       {transactions.length > 0 ? (
         <Pie data={chartData} options={options} />
       ) : (
-        <p className="text-center text-blue-500">No transaction data available to display.</p>
+        <p className="text-center text-gray-500">
+          No transaction data available to display.
+        </p>
       )}
     </div>
   );
